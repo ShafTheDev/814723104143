@@ -404,3 +404,75 @@ Route all read queries to replica database
 - distributes db load with replica database
 ### Only handles the read queries not the write queries as it is a replica database
 ---
+
+# Stage 5
+
+## Problem with Current Implementation
+
+**Current pseudocode:**
+```
+function notify_all(student_ids: array, message: string):
+  for student_id in student_ids:
+    send_email(student_id, message)
+    save_to_db(student_id, message)
+    push_to_app(student_id, message)
+```
+
+---
+
+## Shortcomings
+1. processes one student at a time, 50,000 students will take very long
+2. if email sent fails the whole flow breaks
+3. email, DB save and push all happen together
+4. failed notifications are not restarted
+
+---
+
+## What Happens When send_email Fails for 200 Students Midway?
+- Those 200 students will not recevie the mail 
+- No record of these 200 students
+- missing of the record of these 200 students
+
+---
+
+## Should DB Save and Email Happen Together?
+No they should no happend together 
+- if they happen together and the email fails then the notification sent is not saved and the data is lost
+- so always save the data in the database and then send the email 
+---
+
+## Redesigned Solution
+
+**revised psudocode**
+```
+function notify_all(student_ids, message):
+
+    for each student_id in student_ids:
+        save_to_db(student_id, message)
+        add_to_email_queue(student_id, message)
+        add_to_push_queue(student_id, message)
+
+
+function email_worker():
+
+    loop forever:
+        job = get_next_email_job()
+        if job exists:
+            try:
+                send_email(job.student_id, job.message)
+            catch:
+                retry_email_job(job)
+
+
+function push_worker():
+
+    loop forever:
+        job = get_next_push_job()
+        if job exists:
+            try:
+                send_push(job.student_id, job.message)
+            catch:
+                retry_push_job(job)
+```
+
+---
