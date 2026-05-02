@@ -476,3 +476,6 @@ function push_worker():
 ```
 
 ---
+# Stage 6
+
+<img width="1240" height="77" alt="Screenshot 2026-05-02 130722" src="https://github.com/user-attachments/assets/487f3e3c-63a1-45d1-91ad-57c8bb8f8fb4" />
