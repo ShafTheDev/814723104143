@@ -305,3 +305,63 @@ ORDER BY createdAt DESC;
 LIMIT 10 OFFSET 0;
 ```
 ---
+
+# Stage 3
+
+## Query Analysis
+
+**Old Query:**
+```sql
+SELECT * FROM notifications
+WHERE studentID = 1042 AND isRead = false
+ORDER BY createdAt ASC;
+```
+
+---
+
+## Is This Query Accurate?
+This query is logically correct but it has issues
+- `SELECT *` is used to fetch all the data which is not necessary
+- No indexes which reads every single row in the table
+- No `LIMIT` — could return thousands of rows at once
+
+---
+
+## Why Is It Slow?
+- No indexes therefore reads every single row making it slower
+- A full table scan is done with each call making it slower for the output
+- `ORDER BY` then orders the gathered data in ascending which is already in huge amount
+
+---
+
+## New Query
+```sql
+SELECT id, type, message, isRead, createdAt
+FROM notifications
+WHERE student_id = 1042
+AND isRead = false
+ORDER BY createdAt ASC
+LIMIT 20 OFFSET 0;
+```
+---
+
+## Should We Index Every Column?
+NO we do not need to index every column 
+- indexing every column slows down the process
+- we only need to index required columns
+
+---
+
+## Computation Cost
+- **old query:** - full scan of 5,000,000 rows
+- **new query:** - directly jumps to matching rows
+
+---
+
+## Query — Students Who Got Placement Notification in Last 7 Days
+```sql
+SELECT DISTINCT student_id
+FROM notifications
+WHERE type = 'Placement'
+AND createdAt >= NOW() - INTERVAL 7 DAY;
+```
