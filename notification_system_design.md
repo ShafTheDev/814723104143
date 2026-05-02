@@ -365,3 +365,42 @@ FROM notifications
 WHERE type = 'Placement'
 AND createdAt >= NOW() - INTERVAL 7 DAY;
 ```
+---
+
+# Stage 4
+
+## Problem
+Notifications are fetched on every page load for every student, overwhelming the database and causing poor user experience.
+
+---
+
+## Solutions & Tradeoffs
+
+### 1. Caching with Redis
+Storing the result in redis instead of hitting the database all the time
+- reduces DB load
+- Very fast response times
+- it can be scaled if needed
+ 
+### it can stale the data and needs extra infrastructure to manage it 
+---
+
+### 2. Pagination
+Never load all notifications at once. Load 10-20 at a time
+- reduce the data transfered during queries
+- lighter db queries
+---
+
+### 3. Database Indexing
+Add indexes on frequently queried columns.
+- faster query execution
+- no need of extra infrastructure
+
+### but requires careful planning for implementation
+---
+
+### 4. Read Replicas
+Route all read queries to replica database
+- distributes db load with replica database
+### Only handles the read queries not the write queries as it is a replica database
+---
